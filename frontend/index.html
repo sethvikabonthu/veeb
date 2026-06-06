@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VEEB — Vehicle Entry-Exit & Billing Auditor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+
+<nav>
+  <div class="logo">VEE<span>B</span></div>
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('dashboard',this)">📊 Dashboard</button>
+    <button class="tab-btn" onclick="switchTab('entry',this)">🚗 Entry/Exit</button>
+    <button class="tab-btn" onclick="switchTab('vehicles',this)">🚘 Vehicles</button>
+    <button class="tab-btn" onclick="switchTab('slots',this)">🅿️ Slots</button>
+    <button class="tab-btn" onclick="switchTab('billing',this)">💳 Billing</button>
+    <button class="tab-btn" onclick="switchTab('reports',this)">📈 Reports</button>
+    <button class="tab-btn" onclick="switchTab('sql',this)">💻 SQL</button>
+  </div>
+  <div class="nav-user">🔒 Admin</div>
+</nav>
+
+<!-- ═══ DASHBOARD ═══ -->
+<div class="view active" id="view-dashboard">
+  <div class="stats-grid" id="statsGrid">
+    <div class="stat-card"><div class="stat-icon purple">🚘</div><div><div class="stat-label">Total Vehicles</div><div class="stat-val" id="s-vehicles">—</div></div></div>
+    <div class="stat-card"><div class="stat-icon gold">🅿️</div><div><div class="stat-label">Currently Parked</div><div class="stat-val" id="s-parked">—</div></div></div>
+    <div class="stat-card"><div class="stat-icon teal">📍</div><div><div class="stat-label">Slots Free</div><div class="stat-val" id="s-free">—</div></div></div>
+    <div class="stat-card"><div class="stat-icon green">💰</div><div><div class="stat-label">Today Revenue</div><div class="stat-val" id="s-today">—</div></div></div>
+    <div class="stat-card"><div class="stat-icon purple">📊</div><div><div class="stat-label">Total Revenue</div><div class="stat-val" id="s-total">—</div></div></div>
+    <div class="stat-card"><div class="stat-icon red">🏢</div><div><div class="stat-label">Occupancy</div><div class="stat-val" id="s-occ">—</div></div></div>
+  </div>
+  <div class="section-card">
+    <div class="section-title">📋 Recent Activity <span class="badge" id="actCount">0</span></div>
+    <div style="overflow-x:auto"><table class="data-table" id="recentTable"><thead><tr><th>Log</th><th>Plate</th><th>Slot</th><th>Entry</th><th>Exit</th><th>Fee</th><th>Status</th></tr></thead><tbody></tbody></table></div>
+  </div>
+  <div class="section-card">
+    <div class="section-title">📊 Revenue (Last 7 Days)</div>
+    <div class="revenue-bars" id="revChart"></div>
+  </div>
+</div>
+
+<!-- ═══ ENTRY/EXIT ═══ -->
+<div class="view" id="view-entry">
+  <div class="section-card">
+    <div class="section-title">🚗 Record Vehicle Entry</div>
+    <div class="form-grid">
+      <div class="field"><label>Plate Number</label><input id="ePlate" placeholder="TS09AB1234"/></div>
+      <div class="field"><label>Slot</label><select id="eSlot"></select></div>
+    </div>
+    <div style="margin-top:18px"><button class="btn btn-primary" onclick="recordEntry()">🚗 Record Entry</button></div>
+  </div>
+  <div class="section-card">
+    <div class="section-title">🚪 Record Vehicle Exit</div>
+    <div class="form-grid">
+      <div class="field"><label>Select Parked Vehicle</label><select id="xVehicle"></select></div>
+      <div class="field"><label>Payment Method</label><select id="xPay"><option>Cash</option><option>UPI</option><option>Card</option></select></div>
+    </div>
+    <div style="margin-top:18px"><button class="btn btn-accent" onclick="recordExit()">🚪 Record Exit & Bill</button></div>
+  </div>
+  <div class="section-card">
+    <div class="section-title">🅿️ Currently Parked</div>
+    <div style="overflow-x:auto"><table class="data-table" id="parkedTable"><thead><tr><th>Plate</th><th>Owner</th><th>Type</th><th>Slot</th><th>Entry Time</th><th>Duration</th></tr></thead><tbody></tbody></table></div>
+  </div>
+</div>
+
+<!-- ═══ VEHICLES ═══ -->
+<div class="view" id="view-vehicles">
+  <div class="section-card">
+    <div class="section-title">➕ Register New Vehicle</div>
+    <div class="form-grid">
+      <div class="field"><label>Plate Number</label><input id="vPlate" placeholder="TS09AB1234"/></div>
+      <div class="field"><label>Vehicle Type</label><select id="vType"></select></div>
+      <div class="field"><label>Owner Name</label><input id="vOwner" placeholder="Full Name"/></div>
+      <div class="field"><label>Phone</label><input id="vPhone" placeholder="9876543210"/></div>
+    </div>
+    <div style="margin-top:18px"><button class="btn btn-primary" onclick="registerVehicle()">➕ Register Vehicle</button></div>
+  </div>
+  <div class="section-card">
+    <div class="section-title">🚘 All Vehicles <span class="badge" id="vehCount">0</span></div>
+    <div style="overflow-x:auto"><table class="data-table" id="vehiclesTable"><thead><tr><th>ID</th><th>Plate</th><th>Type</th><th>Owner</th><th>Phone</th><th>Registered</th></tr></thead><tbody></tbody></table></div>
+  </div>
+</div>
+
+<!-- ═══ SLOTS ═══ -->
+<div class="view" id="view-slots">
+  <div class="section-card">
+    <div class="section-title">🅿️ Parking Slots Overview</div>
+    <div class="slot-grid" id="slotGrid"></div>
+  </div>
+</div>
+
+<!-- ═══ BILLING ═══ -->
+<div class="view" id="view-billing">
+  <div class="section-card">
+    <div class="section-title">💳 Billing Records <span class="badge" id="billCount">0</span></div>
+    <div style="overflow-x:auto"><table class="data-table" id="billingTable"><thead><tr><th>Bill ID</th><th>Plate</th><th>Amount</th><th>Method</th><th>Status</th><th>Date</th></tr></thead><tbody></tbody></table></div>
+  </div>
+</div>
+
+<!-- ═══ REPORTS ═══ -->
+<div class="view" id="view-reports">
+  <div class="section-card">
+    <div class="section-title">📈 Revenue Reports</div>
+    <div style="overflow-x:auto"><table class="data-table" id="reportsTable"><thead><tr><th>Date</th><th>Entries</th><th>Exits</th><th>Revenue (₹)</th></tr></thead><tbody></tbody></table></div>
+  </div>
+  <div class="section-card">
+    <div class="section-title">🔍 Custom Report Query</div>
+    <div class="form-grid">
+      <div class="field"><label>From Date</label><input type="date" id="rFrom"/></div>
+      <div class="field"><label>To Date</label><input type="date" id="rTo"/></div>
+    </div>
+    <div style="margin-top:18px"><button class="btn btn-primary" onclick="genReport()">📊 Generate Report</button></div>
+    <div id="customReport" style="margin-top:20px"></div>
+  </div>
+</div>
+
+<!-- ═══ SQL TERMINAL ═══ -->
+<div class="view" id="view-sql">
+  <div class="sql-card">
+    <div class="sql-label">SQL Query Editor</div>
+    <textarea id="sql-input" placeholder="SELECT * FROM Vehicle;"></textarea>
+    <div class="sql-actions">
+      <button class="btn btn-primary" onclick="runSql()">▶ Execute</button>
+      <button class="btn btn-sm" style="background:var(--dark3);color:var(--text-dim)" onclick="document.getElementById('sql-input').value='';document.getElementById('sql-results').innerHTML=''">Clear</button>
+    </div>
+  </div>
+  <div id="sql-results"><div class="sql-msg">Results appear here...</div></div>
+  <div style="margin-top:32px">
+    <div class="sql-label">Quick Table Explorer</div>
+    <div class="db-chips">
+      <div class="chip" onclick="runSql('SELECT * FROM Vehicle_Type')"><i>#</i> Vehicle_Type</div>
+      <div class="chip" onclick="runSql('SELECT * FROM Vehicle')"><i>#</i> Vehicle</div>
+      <div class="chip" onclick="runSql('SELECT * FROM Parking_Slot')"><i>#</i> Parking_Slot</div>
+      <div class="chip" onclick="runSql('SELECT * FROM Entry_Exit_Log')"><i>#</i> Entry_Exit_Log</div>
+      <div class="chip" onclick="runSql('SELECT * FROM Billing')"><i>#</i> Billing</div>
+      <div class="chip" onclick="runSql('SELECT * FROM Revenue_Report')"><i>#</i> Revenue_Report</div>
+      <div class="chip" onclick="runSql('SELECT * FROM Admin_User')"><i>#</i> Admin_User</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/api.js" type="module"></script>
+<script type="module">
+import { executeQuery, fetchDashboard } from './js/api.js';
+window.executeQuery = executeQuery;
+
+// ── TAB SWITCHING ──
+window.switchTab = function(tab, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('view-' + tab).classList.add('active');
+  if (tab === 'dashboard') loadDashboard();
+  if (tab === 'entry') loadEntryView();
+  if (tab === 'vehicles') loadVehicles();
+  if (tab === 'slots') loadSlots();
+  if (tab === 'billing') loadBilling();
+  if (tab === 'reports') loadReports();
+};
+
+// ── TOAST ──
+let toastT;
+window.showToast = function(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => t.classList.remove('show'), 2800);
+};
+
+function fmtDate(d) { return d ? new Date(d).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '—'; }
+
+// ══════ DASHBOARD ══════
+async function loadDashboard() {
+  try {
+    const stats = await fetchDashboard();
+    document.getElementById('s-vehicles').textContent = stats.totalVehicles;
+    document.getElementById('s-parked').textContent = stats.currentlyParked;
+    document.getElementById('s-free').textContent = (stats.totalSlots - stats.occupiedSlots) + '/' + stats.totalSlots;
+    document.getElementById('s-today').textContent = '₹' + stats.todayRevenue;
+    document.getElementById('s-total').textContent = '₹' + stats.totalRevenue;
+    document.getElementById('s-occ').textContent = Math.round((stats.occupiedSlots / stats.totalSlots) * 100) + '%';
+  } catch(e) { console.error(e); }
+
+  // Recent logs
+  const logs = await executeQuery('SELECT l.*, v.plate_number, p.slot_number FROM Entry_Exit_Log l JOIN Vehicle v ON l.vehicle_id=v.vehicle_id JOIN Parking_Slot p ON l.slot_id=p.slot_id ORDER BY l.log_id DESC LIMIT 10');
+  if (logs.rows) {
+    document.getElementById('actCount').textContent = logs.rows.length;
+    document.querySelector('#recentTable tbody').innerHTML = logs.rows.map(r => `<tr>
+      <td>#${r.log_id}</td><td class="plate">${r.plate_number}</td><td>${r.slot_number}</td>
+      <td>${fmtDate(r.entry_time)}</td><td>${fmtDate(r.exit_time)}</td><td>₹${r.fee||0}</td>
+      <td><span class="badge-status badge-${r.status.toLowerCase()}">${r.status}</span></td></tr>`).join('');
+  }
+
+  // Revenue chart
+  const rev = await executeQuery('SELECT * FROM Revenue_Report ORDER BY report_date DESC LIMIT 7');
+  if (rev.rows && rev.rows.length) {
+    const maxR = Math.max(...rev.rows.map(r => parseFloat(r.total_revenue) || 1));
+    document.getElementById('revChart').innerHTML = rev.rows.reverse().map(r => {
+      const h = Math.max(10, (parseFloat(r.total_revenue) / maxR) * 140);
+      const d = new Date(r.report_date);
+      return `<div class="rev-bar"><div class="bar-val">₹${r.total_revenue}</div><div class="bar" style="height:${h}px"></div><div class="bar-label">${d.getDate()}/${d.getMonth()+1}</div></div>`;
+    }).join('');
+  }
+}
+
+// ══════ ENTRY/EXIT ══════
+async function loadEntryView() {
+  // Free slots dropdown
+  const slots = await executeQuery("SELECT s.*, vt.type_name FROM Parking_Slot s LEFT JOIN Vehicle_Type vt ON s.vehicle_type_allowed=vt.type_id WHERE s.is_occupied=FALSE");
+  const sel = document.getElementById('eSlot');
+  sel.innerHTML = '<option value="">Select slot...</option>' + (slots.rows||[]).map(s => `<option value="${s.slot_id}">${s.slot_number} (Zone ${s.zone}) - ${s.type_name||'Any'}</option>`).join('');
+
+  // Parked vehicles dropdown
+  const parked = await executeQuery("SELECT l.log_id, l.entry_time, v.plate_number, p.slot_number FROM Entry_Exit_Log l JOIN Vehicle v ON l.vehicle_id=v.vehicle_id JOIN Parking_Slot p ON l.slot_id=p.slot_id WHERE l.status='Parked'");
+  const xSel = document.getElementById('xVehicle');
+  xSel.innerHTML = '<option value="">Select vehicle...</option>' + (parked.rows||[]).map(p => `<option value="${p.log_id}">${p.plate_number} @ ${p.slot_number} (since ${fmtDate(p.entry_time)})</option>`).join('');
+
+  // Parked table
+  const pt = await executeQuery("SELECT v.plate_number, v.owner_name, vt.type_name, p.slot_number, l.entry_time, TIMESTAMPDIFF(MINUTE,l.entry_time,NOW()) as mins FROM Entry_Exit_Log l JOIN Vehicle v ON l.vehicle_id=v.vehicle_id JOIN Vehicle_Type vt ON v.type_id=vt.type_id JOIN Parking_Slot p ON l.slot_id=p.slot_id WHERE l.status='Parked'");
+  document.querySelector('#parkedTable tbody').innerHTML = (pt.rows||[]).map(r => {
+    const hrs = Math.floor(r.mins/60); const mins = r.mins%60;
+    return `<tr><td class="plate">${r.plate_number}</td><td>${r.owner_name||'—'}</td><td>${r.type_name}</td><td>${r.slot_number}</td><td>${fmtDate(r.entry_time)}</td><td>${hrs}h ${mins}m</td></tr>`;
+  }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text-dim)">No vehicles currently parked</td></tr>';
+}
+
+window.recordEntry = async function() {
+  const plate = document.getElementById('ePlate').value.trim().toUpperCase();
+  const slotId = document.getElementById('eSlot').value;
+  if (!plate || !slotId) return showToast('⚠️ Fill plate & slot');
+
+  // Check if vehicle exists, if not register it
+  let veh = await executeQuery(`SELECT * FROM Vehicle WHERE plate_number='${plate}'`);
+  let vehicleId;
+  if (!veh.rows || !veh.rows.length) {
+    // Auto-register with type 2 (Car) as default
+    const ins = await executeQuery(`INSERT INTO Vehicle (plate_number, type_id, owner_name) VALUES ('${plate}', 2, 'Walk-in')`);
+    vehicleId = ins.rows.insertId;
+    showToast('🆕 Vehicle auto-registered as Car');
+  } else {
+    vehicleId = veh.rows[0].vehicle_id;
+  }
+
+  const res = await executeQuery(`INSERT INTO Entry_Exit_Log (vehicle_id, slot_id) VALUES (${vehicleId}, ${slotId})`);
+  if (res.error) return showToast('❌ ' + res.error);
+  showToast('✅ Entry recorded!');
+  document.getElementById('ePlate').value = '';
+  loadEntryView();
+};
+
+window.recordExit = async function() {
+  const logId = document.getElementById('xVehicle').value;
+  const payMethod = document.getElementById('xPay').value;
+  if (!logId) return showToast('⚠️ Select a parked vehicle');
+
+  // Update exit time (trigger calculates fee)
+  await executeQuery(`UPDATE Entry_Exit_Log SET exit_time=NOW() WHERE log_id=${logId}`);
+
+  // Get the calculated fee
+  const feeData = await executeQuery(`SELECT fee FROM Entry_Exit_Log WHERE log_id=${logId}`);
+  const fee = feeData.rows[0]?.fee || 0;
+
+  // Create billing record
+  await executeQuery(`INSERT INTO Billing (log_id, amount, payment_method, payment_status) VALUES (${logId}, ${fee}, '${payMethod}', 'Paid')`);
+
+  showToast(`✅ Exit recorded! Fee: ₹${fee} (${payMethod})`);
+  loadEntryView();
+};
+
+
+async function loadVehicles() {
+  const types = await executeQuery('SELECT * FROM Vehicle_Type');
+  document.getElementById('vType').innerHTML = (types.rows||[]).map(t => `<option value="${t.type_id}">${t.type_name} (₹${t.hourly_rate}/hr)</option>`).join('');
+
+  const vehs = await executeQuery('SELECT v.*, vt.type_name FROM Vehicle v JOIN Vehicle_Type vt ON v.type_id=vt.type_id ORDER BY v.vehicle_id DESC');
+  document.getElementById('vehCount').textContent = (vehs.rows||[]).length;
+  document.querySelector('#vehiclesTable tbody').innerHTML = (vehs.rows||[]).map(v => `<tr>
+    <td>${v.vehicle_id}</td><td class="plate">${v.plate_number}</td><td>${v.type_name}</td>
+    <td>${v.owner_name||'—'}</td><td>${v.phone||'—'}</td><td>${fmtDate(v.registered_at)}</td></tr>`).join('');
+}
+
+window.registerVehicle = async function() {
+  const plate = document.getElementById('vPlate').value.trim().toUpperCase();
+  const typeId = document.getElementById('vType').value;
+  const owner = document.getElementById('vOwner').value.trim();
+  const phone = document.getElementById('vPhone').value.trim();
+  if (!plate) return showToast('⚠️ Enter plate number');
+
+  const res = await executeQuery(`INSERT INTO Vehicle (plate_number, type_id, owner_name, phone) VALUES ('${plate}', ${typeId}, '${owner}', '${phone}')`);
+  if (res.error) return showToast('❌ ' + res.error);
+  showToast('✅ Vehicle registered!');
+  document.getElementById('vPlate').value=''; document.getElementById('vOwner').value=''; document.getElementById('vPhone').value='';
+  loadVehicles();
+};
+
+
+async function loadSlots() {
+  const slots = await executeQuery('SELECT s.*, vt.type_name FROM Parking_Slot s LEFT JOIN Vehicle_Type vt ON s.vehicle_type_allowed=vt.type_id ORDER BY s.slot_number');
+  document.getElementById('slotGrid').innerHTML = (slots.rows||[]).map(s => `
+    <div class="slot-card ${s.is_occupied?'occupied':''}">
+      <div class="slot-num">${s.slot_number}</div>
+      <div class="slot-zone">Zone ${s.zone} · Floor ${s.floor_level}</div>
+      <div class="slot-zone">${s.type_name||'Any'}</div>
+      <div class="slot-status ${s.is_occupied?'badge-occupied':'badge-free'}">${s.is_occupied?'🔴 Occupied':'🟢 Free'}</div>
+    </div>`).join('');
+}
+
+
+async function loadBilling() {
+  const bills = await executeQuery('SELECT b.*, v.plate_number FROM Billing b JOIN Entry_Exit_Log l ON b.log_id=l.log_id JOIN Vehicle v ON l.vehicle_id=v.vehicle_id ORDER BY b.billing_id DESC');
+  document.getElementById('billCount').textContent = (bills.rows||[]).length;
+  document.querySelector('#billingTable tbody').innerHTML = (bills.rows||[]).map(b => `<tr>
+    <td>#${b.billing_id}</td><td class="plate">${b.plate_number}</td><td style="font-weight:800">₹${b.amount}</td>
+    <td>${b.payment_method}</td><td><span class="badge-status badge-${b.payment_status.toLowerCase()}">${b.payment_status}</span></td>
+    <td>${fmtDate(b.billed_at)}</td></tr>`).join('');
+}
+
+
+async function loadReports() {
+  const reps = await executeQuery('SELECT * FROM Revenue_Report ORDER BY report_date DESC');
+  document.querySelector('#reportsTable tbody').innerHTML = (reps.rows||[]).map(r => `<tr>
+    <td>${new Date(r.report_date).toLocaleDateString('en-IN')}</td><td>${r.total_entries}</td>
+    <td>${r.total_exits}</td><td style="font-weight:800;color:var(--accent)">₹${r.total_revenue}</td></tr>`).join('');
+}
+
+window.genReport = async function() {
+  const from = document.getElementById('rFrom').value;
+  const to = document.getElementById('rTo').value;
+  if (!from || !to) return showToast('⚠️ Select date range');
+  const res = await executeQuery(`SELECT COUNT(*) as entries, COALESCE(SUM(fee),0) as revenue FROM Entry_Exit_Log WHERE DATE(entry_time) BETWEEN '${from}' AND '${to}'`);
+  const r = res.rows[0];
+  document.getElementById('customReport').innerHTML = `
+    <div class="stats-grid"><div class="stat-card"><div class="stat-icon teal">📋</div><div><div class="stat-label">Total Entries</div><div class="stat-val">${r.entries}</div></div></div>
+    <div class="stat-card"><div class="stat-icon green">💰</div><div><div class="stat-label">Total Revenue</div><div class="stat-val">₹${r.revenue}</div></div></div></div>`;
+};
+
+
+window.runSql = async function(customQuery) {
+  const query = customQuery || document.getElementById('sql-input').value.trim();
+  if (!query) return;
+  if (customQuery) document.getElementById('sql-input').value = customQuery;
+  const resDiv = document.getElementById('sql-results');
+  resDiv.innerHTML = '<div class="sql-msg" style="color:var(--accent)">Executing...</div>';
+  try {
+    const data = await executeQuery(query);
+    if (data.error) throw new Error(data.error);
+    if (data.fields && data.fields.length > 0) {
+      let html = '<table class="data-table"><thead><tr>';
+      data.fields.forEach(f => html += `<th>${f}</th>`);
+      html += '</tr></thead><tbody>';
+      data.rows.forEach(r => { html += '<tr>'; data.fields.forEach(f => html += `<td>${r[f]!==null?r[f]:'<i>NULL</i>'}</td>`); html += '</tr>'; });
+      html += '</tbody></table>';
+      resDiv.innerHTML = html;
+    } else {
+      resDiv.innerHTML = `<div class="sql-msg" style="color:var(--success)">✅ Query OK. Affected rows: ${data.rows.affectedRows||0}</div>`;
+    }
+  } catch(e) { resDiv.innerHTML = `<div class="sql-error">❌ ${e.message}</div>`; }
+};
+
+
+loadDashboard();
+</script>
+</body>
+</html>
